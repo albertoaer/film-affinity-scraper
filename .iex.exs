@@ -1,0 +1,2 @@
+import FilmAffinityScraper
+alias FilmAffinityScraper.Cookie
