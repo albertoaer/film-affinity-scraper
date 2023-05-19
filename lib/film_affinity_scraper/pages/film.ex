@@ -8,6 +8,7 @@ defmodule FilmAffinityScraper.Pages.Film do
     defstruct title: "", names: []
   end
 
+  @impl FilmAffinityScraper.Pages
   def scrape_document(document) do
     title = Floki.find(document, "#main-title span") |> Floki.text() |> String.trim()
 

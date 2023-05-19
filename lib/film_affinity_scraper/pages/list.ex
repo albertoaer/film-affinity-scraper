@@ -1,11 +1,13 @@
 defmodule FilmAffinityScraper.Pages.List do
-  use FilmAffinityScraper.Pages
+  use FilmAffinityScraper.Pages, method: :post, must_cookie: true
 
+  @impl FilmAffinityScraper.Pages
   def scrape_document(document) do
     {:ok, Floki.attribute(document, "data-movie-id") |> MapSet.new()}
   end
 
-  defp find_document(response) do
+  @impl FilmAffinityScraper.Pages
+  def get_document(response) do
     {:ok, result} = Jason.decode(response.body, keys: :atoms)
 
     if result.result != 0 do
@@ -20,13 +22,11 @@ defmodule FilmAffinityScraper.Pages.List do
 
     {:ok, map} =
       scrape_page("movieslist.ajax.php?action=renderpage",
-        method: :post,
         headers: [
           "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
           "Content-Length": String.length(body)
         ],
         body: body,
-        find: &find_document/1,
         cookie: cookie
       )
 

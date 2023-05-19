@@ -5,9 +5,8 @@ defmodule FilmAffinityScraper.Cookie do
 
   defstruct [:id]
 
-  def start_link(state \\ nil) do
-    Agent.start_link(fn -> state end, name: __MODULE__)
-  end
+  def start_link(init \\ nil, opts \\ []),
+    do: Agent.start_link(fn -> from(init) end, name: opts[:store] || __MODULE__)
 
   def to_string(%Cookie{id: nil}), do: nil
 
@@ -15,7 +14,14 @@ defmodule FilmAffinityScraper.Cookie do
 
   def to_string(other) when other == nil or is_binary(other), do: other
 
-  def active, do: Agent.get(__MODULE__, & &1)
+  def active(opts \\ []), do: Agent.get(opts[:store] || __MODULE__, & &1)
 
-  def update(cookie = %Cookie{}), do: Agent.update(__MODULE__, fn _ -> cookie end)
+  def update(cookie, opts \\ []),
+    do: Agent.update(opts[:store] || __MODULE__, fn _ -> from(cookie) end)
+
+  def from(nil), do: %Cookie{}
+
+  def from(id) when is_binary(id), do: %Cookie{id: id}
+
+  def from(cookie = %Cookie{}), do: cookie
 end

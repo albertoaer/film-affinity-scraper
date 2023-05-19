@@ -24,14 +24,10 @@ defmodule FilmAffinityScraper.Request do
       url: join_route(@url_es, route),
       method: opts[:method] || :get,
       body: opts[:body] || "",
-      headers: get_headers(opts[:headers], opts[:cookie] || Cookie.active())
+      headers: get_headers(opts[:headers], opts[:cookie])
     }
 
     {:ok, response} = HTTPoison.request(prepared_request)
     response
-  end
-
-  def body_document(response) do
-    Floki.parse_document(response.body)
   end
 end
