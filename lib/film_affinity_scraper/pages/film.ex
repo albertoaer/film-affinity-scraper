@@ -1,6 +1,7 @@
 defmodule FilmAffinityScraper.Pages.Film do
   use FilmAffinityScraper.Pages
   alias FilmAffinityScraper.Pages.Film
+  alias FilmAffinityScraper.Utils.PlatformSet
 
   defstruct title: "",
             original_title: "",
@@ -10,11 +11,7 @@ defmodule FilmAffinityScraper.Pages.Film do
             image: "",
             duration: 0,
             description: "",
-            platforms: []
-
-  defmodule PlatformSet do
-    defstruct title: "", names: []
-  end
+            platforms: PlatformSet.new()
 
   @impl FilmAffinityScraper.Pages
   def scrape_document(document) do
@@ -65,12 +62,13 @@ defmodule FilmAffinityScraper.Pages.Film do
     platforms =
       Floki.find(document, "#stream-wrapper .body > *")
       |> Enum.chunk_every(2)
-      |> Enum.map(fn
-        [title, wrapper] ->
-          %PlatformSet{
-            title: title |> Floki.text(),
-            names: Floki.find(wrapper, "img") |> Floki.attribute("title")
-          }
+      |> Enum.reduce(PlatformSet.new(), fn
+        [title, wrapper], set ->
+          PlatformSet.add(
+            set,
+            title |> Floki.text(),
+            Floki.find(wrapper, "img") |> Floki.attribute("title")
+          )
       end)
 
     {:ok,
