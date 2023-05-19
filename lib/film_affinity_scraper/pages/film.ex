@@ -2,7 +2,15 @@ defmodule FilmAffinityScraper.Pages.Film do
   use FilmAffinityScraper.Pages
   alias FilmAffinityScraper.Pages.Film
 
-  defstruct title: "", image: "", duration: 0, description: "", platforms: []
+  defstruct title: "",
+            original_title: "",
+            rating: 0,
+            votes: 0,
+            country: "",
+            image: "",
+            duration: 0,
+            description: "",
+            platforms: []
 
   defmodule PlatformSet do
     defstruct title: "", names: []
@@ -12,12 +20,37 @@ defmodule FilmAffinityScraper.Pages.Film do
   def scrape_document(document) do
     title = Floki.find(document, "#main-title span") |> Floki.text() |> String.trim()
 
+    rating =
+      case Floki.find(document, "#movie-rat-avg")
+           |> Floki.text()
+           |> String.trim()
+           |> String.replace([",", "."], "")
+           |> Integer.parse() do
+        {rating, _} -> rating
+        _ -> nil
+      end
+
+    votes =
+      case Floki.find(document, "#movie-count-rat span")
+           |> Floki.text()
+           |> String.trim()
+           |> String.replace([",", "."], "")
+           |> Integer.parse() do
+        {votes, _} -> votes
+        _ -> nil
+      end
+
     image =
       Floki.find(document, "#movie-main-image-container img")
       |> Floki.attribute("src")
       |> Enum.at(0)
 
     movie_info = Floki.find(document, ".movie-info")
+
+    original_title =
+      Floki.find(movie_info, "dd") |> Enum.at(0) |> Floki.text(deep: false) |> String.trim()
+
+    country = Floki.find(movie_info, "#country-img img") |> Floki.attribute("alt") |> Enum.at(0)
 
     duration =
       Floki.find(movie_info, "[itemprop=\"duration\"]")
@@ -43,6 +76,10 @@ defmodule FilmAffinityScraper.Pages.Film do
     {:ok,
      %Film{
        title: title,
+       original_title: original_title,
+       rating: rating,
+       votes: votes,
+       country: country,
        image: image,
        duration: duration,
        description: description,
@@ -50,5 +87,15 @@ defmodule FilmAffinityScraper.Pages.Film do
      }}
   end
 
-  def get_film(id, opts \\ []), do: scrape_page("film#{id}.html", cookie: opts[:cookie])
+  def get_film(id, opts \\ [])
+
+  def get_film(id, opts) when is_integer(id), do: get_film(Integer.to_string(id), opts)
+
+  def get_film(id, opts) when is_bitstring(id) do
+    if String.starts_with?(id, "film") do
+      scrape_page(id, cookie: opts[:cookie])
+    else
+      scrape_page("film#{id}.html", cookie: opts[:cookie])
+    end
+  end
 end

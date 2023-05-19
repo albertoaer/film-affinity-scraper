@@ -7,17 +7,20 @@ defmodule FilmAffinityScraper.Pages do
 
   defmacro __using__(opts) do
     {method, opts} = Keyword.pop(opts, :method, :get)
-    must_cookie = if opts[:must_cookie] do
-      quote do
-        opts = if !opts[:cookie] do
-          Keyword.put(opts, :cookie, FilmAffinityScraper.Cookie.active)
-        else
-          opts
+
+    must_cookie =
+      if opts[:must_cookie] do
+        quote do
+          opts =
+            if !opts[:cookie] do
+              Keyword.put(opts, :cookie, FilmAffinityScraper.Cookie.active())
+            else
+              opts
+            end
         end
+      else
+        nil
       end
-    else
-      nil
-    end
 
     quote do
       @behaviour Pages
