@@ -1,3 +1,4 @@
 import FilmAffinityScraper
 alias FilmAffinityScraper.Cookie
+alias FilmAffinityScraper.Proxy
 alias FilmAffinityScraper.Utils.PlatformSet
