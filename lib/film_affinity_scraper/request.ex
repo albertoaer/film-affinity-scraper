@@ -1,5 +1,6 @@
 defmodule FilmAffinityScraper.Request do
   alias FilmAffinityScraper.Cookie
+  alias FilmAffinityScraper.Proxy
 
   @url "https://www.filmaffinity.com"
   @url_es "#{@url}/es"
@@ -19,12 +20,15 @@ defmodule FilmAffinityScraper.Request do
     end
   end
 
-  def request(route \\ "", opts \\ []) do
+  def request!(route \\ "", opts \\ []) do
+    {:ok, proxy} = Proxy.proxy_or(opts[:proxy])
+
     prepared_request = %HTTPoison.Request{
       url: join_route(@url_es, route),
       method: opts[:method] || :get,
       body: opts[:body] || "",
-      headers: get_headers(opts[:headers], opts[:cookie])
+      headers: get_headers(opts[:headers], opts[:cookie]),
+      options: [proxy: proxy]
     }
 
     {:ok, response} = HTTPoison.request(prepared_request)
