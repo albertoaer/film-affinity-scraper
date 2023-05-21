@@ -4,6 +4,7 @@ defmodule FilmAffinityScraper.Pages.UserList do
   """
 
   use FilmAffinityScraper.Pages
+  alias FilmAffinityScraper.Paginator
 
   @impl FilmAffinityScraper.Pages
   def scrape_document(document) do
@@ -23,11 +24,15 @@ defmodule FilmAffinityScraper.Pages.UserList do
   defp get_list_paged(user_id, list_id, page, accumulated) do
     {:ok, map} = scrape_page("userlist.php?user_id=#{user_id}&list_id=#{list_id}&chv=list&page=#{page}")
 
-    get_list_paged(user_id, list_id, page + 1, MapSet.union(accumulated, map))
+    {:next, MapSet.union(accumulated, map)}
   rescue
     _ -> accumulated
   end
 
-  def get_list(user_id, list_id, _opts \\ []),
-    do: get_list_paged(user_id, list_id, 1, MapSet.new()) |> MapSet.to_list()
+  def get_list(user_id, list_id, _opts \\ []) do
+    Paginator.paginate(fn
+      page, nil -> get_list_paged(user_id, list_id, page, MapSet.new())
+      page, acc -> get_list_paged(user_id, list_id, page, acc)
+    end) |> MapSet.to_list()
+  end
 end
