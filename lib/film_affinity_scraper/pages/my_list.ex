@@ -1,4 +1,10 @@
-defmodule FilmAffinityScraper.Pages.List do
+defmodule FilmAffinityScraper.Pages.MyList do
+  @moduledoc """
+  MyList page allows retrieving data from a private list.
+  It`s only valid for an user private list or privated like list view. (mylist.php?list_id=...)
+  It requires an user session cookie in order to work.
+  """
+
   use FilmAffinityScraper.Pages, method: :post, must_cookie: true
 
   @impl FilmAffinityScraper.Pages
