@@ -32,9 +32,10 @@ defmodule FilmAffinityScraper.Pages do
         opts = Keyword.put(opts, :method, unquote(method))
         unquote(must_cookie)
 
-        case Request.request!(url, opts) |> get_document.() do
-          {:ok, document} -> scrape_document(document)
-          otherwise -> otherwise
+        with {:ok, response} <- Request.request(url, opts), {:ok, document} <- get_document.(response) do
+          scrape_document(document)
+        else
+          err_case -> err_case
         end
       end
 

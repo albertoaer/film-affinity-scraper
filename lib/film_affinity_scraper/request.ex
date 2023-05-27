@@ -35,7 +35,6 @@ defmodule FilmAffinityScraper.Request do
 
     Logger.info("Requesting: #{url}")
 
-    {:ok, response} = HTTPoison.request(prepared_request)
-    response
+    HTTPoison.request(prepared_request)
   end
 end
