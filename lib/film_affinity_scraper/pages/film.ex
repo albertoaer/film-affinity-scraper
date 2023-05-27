@@ -89,6 +89,7 @@ defmodule FilmAffinityScraper.Pages.Film do
 
   def get_film(id, opts) when is_integer(id), do: get_film(Integer.to_string(id), opts)
 
+  # TODO: Why pass cookie?
   def get_film(id, opts) when is_bitstring(id) do
     if String.starts_with?(id, "film") do
       scrape_page(id, cookie: opts[:cookie])

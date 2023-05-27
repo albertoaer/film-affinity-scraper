@@ -1,5 +1,12 @@
-defmodule FilmAffinityScraper.Pages.List do
+defmodule FilmAffinityScraper.Pages.MyList do
+  @moduledoc """
+  MyList page allows retrieving data from a private list.
+  It`s only valid for an user private list or privated like list view. (mylist.php?list_id=...)
+  It requires an user session cookie in order to work.
+  """
+
   use FilmAffinityScraper.Pages, method: :post, must_cookie: true
+  alias FilmAffinityScraper.Paginator
 
   @impl FilmAffinityScraper.Pages
   def scrape_document(document) do
@@ -30,11 +37,16 @@ defmodule FilmAffinityScraper.Pages.List do
         cookie: cookie
       )
 
-    get_list_paged(id, page + 1, MapSet.union(accumulated, map), cookie)
+    {:next, MapSet.union(accumulated, map)}
   rescue
     _ -> accumulated
   end
 
-  def get_list(id, opts \\ []),
-    do: get_list_paged(id, 1, MapSet.new(), opts[:cookie]) |> MapSet.to_list()
+  def get_list(id, opts \\ []) do
+    cookie = opts[:cookie]
+    Paginator.paginate(fn
+      page, nil -> get_list_paged(id, page, MapSet.new, cookie)
+      page, acc -> get_list_paged(id, page, acc, cookie)
+    end) |> MapSet.to_list()
+  end
 end
